@@ -23,7 +23,6 @@ F_EXT = "sud"
 SOL_EXT = "jpg"
 DEFAULT_NAME = '' #'noname.' + F_EXT
 PROGRAM_NAME = ' Решатель СУДОКУ'
-ACTIVE_COLOR = 'magenta'
 
 # Меню
 M_NEW_GAME = 'Игра'
@@ -40,7 +39,6 @@ M_FONT = "Шрифт"
 M_HELP = "Помощь"
 M_ABOUT = 'О программе'
 M_VERSION = "Версия"
-BASE_COLORS = ['white', 'red', 'green', 'yellow']
 BASE_MENU = {M_NEW_GAME: [M_CREATE, M_OPEN, M_SAVE, M_SAVE_AS, M_SAVE_SOLUTION, M_QUIT],
                 M_SOLVE : [], 
                 M_OPTIONS: [M_COLORS, M_FONT],
@@ -56,7 +54,8 @@ def RGB(red,green,blue): return '#%02x%02x%02x' % (int(red), int(green) , int(bl
 
 class Excel():
     ''' класс для хранения данных ячайки таблицы '''
-    def __init__(self, number=0, constant = False):
+    
+    def __init__(self, number, constant = False):
         self.number = number
         self.constant = constant
         self.possible=[]
@@ -67,9 +66,10 @@ class Excel():
 class Sudoku():
     #значения
     BASESET = {1, 2, 3, 4, 5, 6, 7, 8, 9}
+    PUSTO = 0
 
     def __init__(self):
-        self.table = list(list(Excel() for i in range(1,10)) for l in range(1,10))
+        self.table = list(list(Excel(Sudoku.PUSTO) for i in range(1,10)) for l in range(1,10))
         self.counter = 0
 
     @staticmethod
@@ -84,12 +84,12 @@ class Sudoku():
     @staticmethod
     def getrowlist(table, i): 
         #получение списка значений в строке
-        return [table[i][j].number for j in range(9) if table[i][j].number != 0]
+        return [table[i][j].number for j in range(9) if table[i][j].number != Sudoku.PUSTO]
 
     @staticmethod
     def getcolumnlist(table, j):
         #получение списка значений в столбце
-        return [table[i][j].number for i in range(9) if table[i][j].number != 0]
+        return [table[i][j].number for i in range(9) if table[i][j].number != Sudoku.PUSTO]
 
     @staticmethod
     def getsquarelist(table, row, column):
@@ -97,7 +97,7 @@ class Sudoku():
         a=[]
         for n in range(3):
             for k in range(3):
-                if table[row*3+n][column*3+k].number != 0:
+                if table[row*3+n][column*3+k].number != Sudoku.PUSTO:
                     a.append(table[row*3+n][column*3+k].number)
         return a
 
@@ -128,7 +128,7 @@ class Sudoku():
         freecells=[]
         for i in range(9):
             for j in range(9):
-                if table[i][j].number == 0:
+                if table[i][j].number == Sudoku.PUSTO:
                     freecells.append((i, j))
         return freecells
     
@@ -379,7 +379,7 @@ class App(Tk):
         if event.keycode >= 49 and event.keycode <= 57: # keycode of digits from '1'to '9'
             self.sudoku.table[self.cursor_position[0]][self.cursor_position[1]].number = int(event.char)
         if event.keycode == 32: # keycode of space
-            self.sudoku.table[self.cursor_position[0]][self.cursor_position[1]].number = 0
+            self.sudoku.table[self.cursor_position[0]][self.cursor_position[1]].number = Sudoku.PUSTO
         self.draw_cell(*old_position)
         self.draw_cell(*self.cursor_position, cursor=True)
       
@@ -389,10 +389,10 @@ class App(Tk):
         if cursor:
             color = self.colors[С_CURSOR_CELL]
         else:
-            if self.sudoku.table[i][j].number != 0:
+            if self.sudoku.table[i][j].number != Sudoku.PUSTO:
                 color = self.colors[С_DATA_CELL]
         number = None
-        if self.sudoku.table[i][j].number != 0:
+        if self.sudoku.table[i][j].number != Sudoku.PUSTO:
             number = self.sudoku.table[i][j].number
         else:
             if self.solution_table:
@@ -497,12 +497,13 @@ class App(Tk):
             messagebox.showinfo(title = M_SOLVE, message = "Несогласованные данные! Есть повторения в строках, столбцах или квадратах!")
             self.status = "  Введены некорректные данные! Повторите ввод..."  
         else:
+            #self.solution_table = None
             self.solution_table = self.sudoku.solve_sudoku(self.sudoku.table)
             if self.solution_table:
                 self.draw_table()
                 self.status = f"  Судоку решена за {self.sudoku.counter} итераций"
             else:
-                messagebox.showerror(title = M_SOLVE, message = "Решение не найдено:((")
+                messagebox.showerror(title = M_SOLVE, message = "Судоку не имеет решения!!!")
 
     def choose_colors(self):
         def get_choice(event):
