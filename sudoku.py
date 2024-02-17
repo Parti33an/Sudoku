@@ -15,7 +15,6 @@ import json
 from pathlib import *
 import copy
 
-
 #Системные параметры
 ICON_NAME = 'sudoku_logo.ico'
 INI_FILE = 'sudoku.ini'
@@ -48,7 +47,6 @@ BASE_MENU = {M_NEW_GAME: [M_CREATE, M_OPEN, M_SAVE, M_SAVE_AS, M_SAVE_SOLUTION, 
 C_EMPTY_CELL = "Поле"
 С_DATA_CELL = "Значение"
 С_CURSOR_CELL = "Курсор"
-
 
 def RGB(red,green,blue): return '#%02x%02x%02x' % (int(red), int(green) , int(blue))
 
