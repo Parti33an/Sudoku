@@ -65,11 +65,11 @@ class Excel():
 
 class Sudoku():
     #значения
-    BASESET = {1, 2, 3, 4, 5, 6, 7, 8, 9}
-    PUSTO = 0
+    BASESET = {'1', '2', '3', '4', '5', '6', '7', '8', '9'}
+    PUSTO = '0'
 
     def __init__(self):
-        self.table = list(list(Excel(Sudoku.PUSTO) for i in range(1,10)) for l in range(1,10))
+        self.table = list(list(Excel(Sudoku.PUSTO) for i in range(9)) for l in range(9))
         self.counter = 0
 
     @staticmethod
@@ -144,7 +144,7 @@ class Sudoku():
                 all_values.extend(table[cell[0]][cell[1]].possible)
             frequency=dict()
             # cловарь частотного появления
-            for i in range(1,10):
+            for i in Sudoku.BASESET: #range(1,10):
                 frequency[i] = all_values.count(i)
             i = 0
             max_frequency_value = sorted(frequency, key = frequency.get)[-1]  # самое частое значение среди возможных
@@ -176,7 +176,7 @@ class Sudoku():
                 for cell in cellvalues[1]:
                     pointer = cur_table[cell[0]][cell[1]]
                     pointer.number = list(pointer.possible)[0]
-                    pointer.possible=[]
+                    pointer.possible = []
                 if(not self.data_consistency(cur_table)):
                     return False
                 else:
@@ -204,23 +204,18 @@ class Sudoku():
         counter = 0
         try:
             with open(filename,'r') as f:
-                for tmp in f:
-                    line = tmp.split()
-                    try:
-                        data = [int(line[i]) for i in range(len(line))]
-                    except:
-                        return "Ошибка типа данных!"
+                for line in f:
+                    data = line.split()
                     if len(data) == 9:
-                        if(min(data)<0 or max(data)>9):
-                            return "Неверные значения! Исправьте данные!"
+                        if counter<9:
+                            for i in range(9):
+                                if (data[i] in Sudoku.BASESET) or (data[i]  == Sudoku.PUSTO): 
+                                    self.table[counter][i]=Excel(data[i], True)
+                                else:
+                                    return "Неверные значения! Исправьте данные!"
+                            counter += 1
                         else:
-                            if(counter<9):
-                                for i in range(9):
-                                    if(data[i]!=0): 
-                                        self.table[counter][i]=Excel(data[i], True)
-                                counter += 1
-                            else:
-                                return "Неверное количестов строк! Исправьте данные!"
+                            return "Неверное количестов строк! Исправьте данные!"
                     else:
                         return "Неверный размер строки! Исправьте данные!"
         except:
@@ -376,8 +371,8 @@ class App(Tk):
         if event.keycode == 40:  # <Down> key
             if old_position[1] < 8:
                 self.cursor_position[1] += 1
-        if event.keycode >= 49 and event.keycode <= 57: # keycode of digits from '1'to '9'
-            self.sudoku.table[self.cursor_position[0]][self.cursor_position[1]].number = int(event.char)
+        if event.char in Sudoku.BASESET: # pressed digits from '1'to '9'
+            self.sudoku.table[self.cursor_position[0]][self.cursor_position[1]].number = event.char
         if event.keycode == 32: # keycode of space
             self.sudoku.table[self.cursor_position[0]][self.cursor_position[1]].number = Sudoku.PUSTO
         self.draw_cell(*old_position)
