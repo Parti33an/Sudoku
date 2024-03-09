@@ -17,6 +17,7 @@ from tkinter import *
 import json
 from pathlib import *
 import copy
+import time
 
 #Системные параметры
 ICON_NAME = 'sudoku_logo.ico'
@@ -398,12 +399,12 @@ class App(Tk):
         x0, y0 = screen.get_center()
         left_x = x0 - 4.5*scale
         left_y = y0 - 4.5*scale
-        screen.create_rectangle( left_x + i*scale, left_y + j*scale,
-                                    left_x + (i+1)*scale, left_y + (j+1)*scale,
+        screen.create_rectangle( left_x + j*scale, left_y + i*scale,
+                                    left_x + (j+1)*scale, left_y + (i+1)*scale,
             fill = color,
             outline = 'black', width = 1)
         if number:
-            screen.create_text(left_x + (i+0.5)*scale, left_y + (j+0.5)*scale,
+            screen.create_text(left_x + (j+0.5)*scale, left_y + (i+0.5)*scale,
                             text= str(number), font = (self.font, int(self.scale/2))) 
                             
     def draw_table(self, table = None):
@@ -494,10 +495,12 @@ class App(Tk):
             self.status = "  Введены некорректные данные! Повторите ввод..."  
         else:
             #self.solution_table = None
+            start = time.perf_counter_ns()
             self.solution_table = self.sudoku.solve_sudoku(self.sudoku.table)
+            end = time.perf_counter_ns()
             if self.solution_table:
                 self.draw_table()
-                self.status = f"  Судоку решена за {self.sudoku.counter} итераций"
+                self.status = f"  Судоку решена за {self.sudoku.counter} итераций, затрачено {(end-start)/1000000} милисекунд"
             else:
                 messagebox.showerror(title = M_SOLVE, message = "Судоку не имеет решения!!!")
 
